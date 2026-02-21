@@ -1,0 +1,34 @@
+# Core
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+pydantic-settings==2.5.2
+
+# AWS
+boto3==1.35.22
+botocore==1.35.22
+
+# Databases
+motor==3.6.0           # async MongoDB
+redis[hiredis]==5.1.1  # async Redis
+pymongo==4.9.1
+
+# ML / Detection
+scikit-learn==1.5.2
+numpy==1.26.4
+pandas==2.2.3
+
+# LLM / Embeddings (optional — comment out if not needed)
+openai==1.51.0
+langchain==0.3.1
+chromadb==0.5.11
+sentence-transformers==3.1.1
+
+# Docker stats
+docker==7.1.0
+
+# HTTP client (simulator)
+httpx==0.27.2
+
+# Utilities
+python-multipart==0.0.12

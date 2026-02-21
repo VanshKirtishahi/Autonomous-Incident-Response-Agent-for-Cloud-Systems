@@ -1,0 +1,13 @@
+{
+  "name": "cloudguard-ai",
+  "version": "1.0.0",
+  "description": "Autonomous Incident Response Agent for Cloud Systems",
+  "scripts": {
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "docker:up": "docker-compose up --build",
+    "docker:down": "docker-compose down",
+    "docker:reset": "docker-compose down -v && docker-compose up --build"
+  }
+}
