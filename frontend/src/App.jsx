@@ -13,6 +13,7 @@ import ContainersPage from './pages/ContainersPage';
 import LogsPage from './pages/LogsPage';
 import PlaybooksPage from './pages/PlaybooksPage';
 import KnowledgePage from './pages/KnowledgePage';
+import RightsizingPage from './pages/RightsizingPage'; // NEW IMPORT
 import './App.css';
 
 function AppContent() {
@@ -33,9 +34,8 @@ function AppContent() {
 
   const fetchUpdates = async () => {
     try {
-      // FIX: Strictly fetch only active incident statuses
       const incidentRes = await API.get('/incidents?status=detecting,diagnosing,remediating,verifying'); 
-      setActiveIncidents(incidentRes.data.incidents || []);
+      setActiveIncidents(incidentRes.data?.incidents || []);
 
       const metricsRes = await API.get('/metrics/current');
       setLiveMetrics(metricsRes.data || {});
@@ -98,6 +98,7 @@ function AppContent() {
             <Route path="/logs" element={<LogsPage />} />
             <Route path="/playbooks" element={<PlaybooksPage />} />
             <Route path="/knowledge" element={<KnowledgePage />} />
+            <Route path="/rightsizing" element={<RightsizingPage />} /> {/* NEW ROUTE */}
           </Routes>
         </main>
 
@@ -119,4 +120,4 @@ export default function App() {
       <AppContent />
     </Router>
   );
-} 
+}

@@ -9,9 +9,6 @@ import { useApp } from '../context/AppContext';
 import { API } from '../utils/api';
 import { barClass, formatUptime, formatBytes } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
-import ContainerMetrics from '../components/ContainerMetrics';
-import VersionHistory from '../components/VersionHistory';
-
 export default function ContainersPage() {
   const { liveMetrics, activeIncidents, addToast } = useApp();
   const [containers, setContainers] = useState([]);

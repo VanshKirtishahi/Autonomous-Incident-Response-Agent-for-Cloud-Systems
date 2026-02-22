@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { BarChart2, AlertTriangle, Box, Terminal, GitBranch, BookOpen, Zap } from 'lucide-react';
+import { BarChart2, AlertTriangle, Box, Terminal, GitBranch, BookOpen, Zap, TrendingDown } from 'lucide-react';
 
 export default function Sidebar({ agentActive }) {
   const navItems = [
@@ -10,6 +10,7 @@ export default function Sidebar({ agentActive }) {
     { path: '/logs', icon: <Terminal size={16} />, label: 'Live Logs' },
     { path: '/playbooks', icon: <GitBranch size={16} />, label: 'Playbooks' },
     { path: '/knowledge', icon: <BookOpen size={16} />, label: 'Knowledge Base' },
+    { path: '/rightsizing', icon: <TrendingDown size={16} />, label: 'Auto-Scaling' },
   ];
 
   return (

@@ -1,13 +1,77 @@
-import React from 'react';
-import { Sparkles, AlertTriangle, RotateCcw, GitBranch } from 'lucide-react';
+import React, { useState } from 'react';
+import { Sparkles, AlertTriangle, RotateCcw, GitBranch, Zap, CheckCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { statusIcon, formatDuration } from '../utils/helpers';
 
 export default function IncidentDetail({ incident }) {
+  const [applying, setApplying] = useState(false);
+  const [applied, setApplied] = useState(false);
+
   if (!incident) return null;
+
+  const handleApplyFix = () => {
+    setApplying(true);
+    // Simulate API call for executing the runbook
+    setTimeout(() => {
+      setApplying(false);
+      setApplied(true);
+    }, 1500);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      
+      {/* NEW: Suggestion Engine Block for Active Incidents */}
+      {incident?.status !== 'resolved' && (
+        <div className="card" style={{ borderColor: 'rgba(168, 85, 247, 0.4)', background: 'linear-gradient(180deg, rgba(168, 85, 247, 0.03) 0%, transparent 100%)' }}>
+           <div className="card-header" style={{ borderBottom: '1px solid rgba(168, 85, 247, 0.2)' }}>
+              <span className="card-title" style={{ color: 'var(--accent-purple)' }}>
+                 <Zap size={14} /> Self-Evolving Runbook Suggestion
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--accent-green)', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                 96% Match Confidence
+              </span>
+           </div>
+           <div className="card-body">
+              <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                 <div style={{ flex: 1, minWidth: 250 }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
+                       Symptom signature matches a previously resolved incident (<strong>#{incident?.aiAnalysis?.similarIncident || 'INC-8492'}</strong>). 
+                       Applying this auto-learned runbook has a historically high success rate.
+                    </div>
+                    <div style={{ background: 'var(--bg-elevated)', padding: 12, borderRadius: 8, borderLeft: '3px solid var(--accent-purple)', marginBottom: 16 }}>
+                       <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)', marginBottom: 4 }}>PROPOSED FIX</div>
+                       <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>
+                          {incident?.aiAnalysis?.proposedFix || 'Restart affected pods, prune idle DB connections, and scale replicas +1.'}
+                       </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 16, fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--text-dim)' }}>
+                       <span><CheckCircle size={11} style={{ display: 'inline', marginRight: 4, color: 'var(--accent-green)' }}/> Success Rate: 100%</span>
+                       <span><RotateCcw size={11} style={{ display: 'inline', marginRight: 4 }}/> Usage Count: 2</span>
+                    </div>
+                 </div>
+                 <div style={{ width: 140, flexShrink: 0 }}>
+                    <button 
+                       className="btn btn-primary" 
+                       style={{ 
+                         width: '100%', 
+                         padding: '10px 0', 
+                         justifyContent: 'center',
+                         background: applied ? 'var(--accent-green)' : 'linear-gradient(135deg, var(--accent-purple), var(--accent-blue))',
+                         border: 'none',
+                         boxShadow: applied ? '0 0 15px rgba(16, 185, 129, 0.3)' : '0 4px 15px rgba(168, 85, 247, 0.3)'
+                       }}
+                       onClick={handleApplyFix}
+                       disabled={applying || applied}
+                    >
+                       {applying ? 'Applying...' : applied ? 'Fix Applied ✓' : 'One-Click Apply'}
+                    </button>
+                 </div>
+              </div>
+           </div>
+        </div>
+      )}
+
       <div className="card">
         <div className="card-body">
           <div className="flex-between mb-20">

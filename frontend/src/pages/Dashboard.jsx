@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     BarChart2, TrendingUp, Clock, Activity, AlertTriangle,
     CheckCircle, Zap, RotateCcw, Sparkles, AlertOctagon,
-    Radio, XCircle, Info
+    Radio, XCircle, Info, BookOpen
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, Tooltip, CartesianGrid, XAxis, YAxis, LineChart, Line } from 'recharts';
@@ -11,6 +11,13 @@ import { useApp } from '../context/AppContext';
 import { API } from '../utils/api';
 import { COLORS } from '../utils/helpers';
 import RecentIncidentsList from '../components/RecentIncidentsList';
+
+// NEW: Mock Data for Dashboard Auto-Learned Runbooks Widget
+const MOCK_LEARNED_RUNBOOKS = [
+    { id: 'KB-1042', name: 'Memory Leak in Node.js', incident: 'INC-8492', success: 100, uses: 2 },
+    { id: 'KB-1043', name: 'Pod Crash Loop on API Gateway', incident: 'INC-7731', success: 94, uses: 12 },
+    { id: 'KB-1044', name: 'Database Connection Saturation', incident: 'INC-2291', success: 88, uses: 5 },
+];
 
 export default function Dashboard() {
     const { activeIncidents, liveMetrics } = useApp();
@@ -135,7 +142,6 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* NEW: Live System Metrics Sparklines */}
             <div className="grid-4 mb-20" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
                 {[
                     { label: 'CPU USAGE', value: `${currentMetrics.cpu}%`, dataKey: 'cpu', color: '#4da6ff' },
@@ -260,6 +266,37 @@ export default function Dashboard() {
                             <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Auto-generated runbook entries from resolved incidents</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* NEW: Dashboard Auto-Learned Runbooks List */}
+            <div className="card" style={{ marginTop: 20 }}>
+                <div className="card-header">
+                    <span className="card-title"><BookOpen size={14} /> Auto-Learned Runbooks</span>
+                    <Link to="/knowledge" style={{ fontSize: 12, color: 'var(--accent-blue)', textDecoration: 'none' }}>View Knowledge Base →</Link>
+                </div>
+                <div className="card-body" style={{ padding: 0 }}>
+                    {MOCK_LEARNED_RUNBOOKS.map((kb, i) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                                    <span style={{ fontWeight: 600, fontSize: 14 }}>{kb.name}</span>
+                                    <span style={{ fontSize: 10, background: 'rgba(168,85,247,0.2)', color: 'var(--accent-purple)', padding: '2px 6px', borderRadius: 4, fontFamily: 'var(--font-mono)' }}>⚡ AUTO-LEARNED</span>
+                                </div>
+                                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Learned from incident <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent-blue)' }}>#{kb.incident}</span></div>
+                            </div>
+                            <div style={{ textAlign: 'right', display: 'flex', gap: 24 }}>
+                                <div>
+                                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--accent-green)' }}>{kb.success}%</div>
+                                    <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>SUCCESS</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 18, fontWeight: 700 }}>{kb.uses}</div>
+                                    <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'var(--font-mono)' }}>USES</div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>
