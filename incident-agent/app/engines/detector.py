@@ -3,7 +3,7 @@ Detection Engine
 Runs three detection layers in order:
   1. Threshold rules   → fast, deterministic
   2. Z-score           → statistical drift
-  3. Isolation Forest  → ML-based novelty detection
+  3. Isolation Forest  → ML-based novelty detection (disabled for demo)
 
 Emits AnomalySignal objects.
 """
@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Deque, Dict, List, Optional
 
 import numpy as np
-from sklearn.ensemble import IsolationForest
+# from sklearn.ensemble import IsolationForest  # Disabled for demo
 
 from app.models.schemas import (
     AnomalySignal, IncidentType, MetricPoint, Severity
@@ -218,27 +218,27 @@ class AnomalyDetector:
                     signals.append(sig)
                     self._set_cooldown(hkey)
 
-            # --- Layer 3: Isolation Forest ---
-            arr = np.array(list(history))
-            self._if_detector.fit_or_update(hkey, arr)
-            if not self._is_cooling_down(hkey) and self._if_detector.predict(hkey, point.value):
-                itype = IncidentType.UNKNOWN
-                score = self._if_detector.score(hkey, point.value)
-                sig = AnomalySignal(
-                    service=point.service,
-                    incident_type=itype,
-                    severity=Severity.MEDIUM,
-                    confidence=min(0.75, 0.4 + score * 0.1),
-                    evidence={
-                        "metric": point.metric_name,
-                        "value": point.value,
-                        "anomaly_score": round(score, 4),
-                        "detection_method": "isolation_forest",
-                    },
-                    raw_metrics=[point],
-                )
-                signals.append(sig)
-                self._set_cooldown(hkey)
+            # --- Layer 3: Isolation Forest (disabled for demo) ---
+            # arr = np.array(list(history))
+            # self._if_detector.fit_or_update(hkey, arr)
+            # if not self._is_cooling_down(hkey) and self._if_detector.predict(hkey, point.value):
+            #     itype = IncidentType.UNKNOWN
+            #     score = self._if_detector.score(hkey, point.value)
+            #     sig = AnomalySignal(
+            #         service=point.service,
+            #         incident_type=itype,
+            #         severity=Severity.MEDIUM,
+            #         confidence=min(0.75, 0.4 + score * 0.1),
+            #         evidence={
+            #             "metric": point.metric_name,
+            #             "value": point.value,
+            #             "anomaly_score": round(score, 4),
+            #             "detection_method": "isolation_forest",
+            #         },
+            #         raw_metrics=[point],
+            #     )
+            #     signals.append(sig)
+            #     self._set_cooldown(hkey)
 
             history.append(point.value)
 

@@ -148,6 +148,43 @@ router.get('/logs', async (req, res) => {
   }
 });
 
+router.post('/logs/realtime', async (req, res) => {
+  try {
+    const { containerId, containerName, service, level, message, timestamp, isAnomaly, tags } = req.body;
+    
+    const logEntry = await Log.create({
+      containerId,
+      containerName,
+      service,
+      level,
+      message,
+      timestamp: new Date(timestamp),
+      isAnomaly,
+      tags
+    });
+
+    // Emit to WebSocket clients for real-time display
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('log:new', {
+        containerId,
+        containerName,
+        service,
+        level,
+        message,
+        timestamp: logEntry.timestamp,
+        isAnomaly,
+        tags
+      });
+    }
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Real-time log error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ─── KNOWLEDGE BASE ───────────────────────────────────────────────────────────
 
 router.get('/knowledge', async (req, res) => {

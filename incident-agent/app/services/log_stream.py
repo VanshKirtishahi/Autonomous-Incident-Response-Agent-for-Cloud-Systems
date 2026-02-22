@@ -3,11 +3,13 @@ Log streaming service — background task that:
 1. Polls CloudWatch + Docker for logs
 2. Extracts metrics from log lines
 3. Feeds metric points to the orchestrator
+4. Sends real-time logs to the backend for display
 """
 import asyncio
 import logging
 import re
 from datetime import datetime, timezone
+import httpx
 
 from app.models.schemas import MetricPoint
 from app.services.orchestrator import process_metrics
@@ -15,6 +17,9 @@ from app.utils.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
+
+# Backend URL for sending logs
+BACKEND_URL = "http://localhost:5000/api/logs/realtime"  # We'll add this endpoint
 
 # Patterns to extract metrics from log lines
 METRIC_PATTERNS = [
@@ -46,7 +51,7 @@ def _extract_metrics_from_log(log_entry) -> list[MetricPoint]:
 
 async def start_log_streaming():
     """
-    Background task: stream logs, extract metrics, feed to orchestrator.
+    Background task: stream logs, extract metrics, feed to orchestrator, send to backend.
     """
     from collectors.aws_logs import CloudWatchLogCollector
     from collectors.docker_logs import DockerLogCollector
@@ -54,9 +59,30 @@ async def start_log_streaming():
     cw_collector = CloudWatchLogCollector()
     docker_collector = DockerLogCollector()
 
+    async def send_log_to_backend(log_entry):
+        """Send log entry to backend for real-time display."""
+        try:
+            log_data = {
+                "containerId": log_entry.service,  # Using service as containerId for simplicity
+                "containerName": log_entry.service,
+                "service": log_entry.service,
+                "level": log_entry.level,
+                "message": log_entry.message,
+                "timestamp": log_entry.timestamp.isoformat(),
+                "isAnomaly": "error" in log_entry.message.lower() or "fatal" in log_entry.message.lower(),
+                "tags": ["docker", "realtime"]
+            }
+            async with httpx.AsyncClient() as client:
+                await client.post(BACKEND_URL, json=log_data, timeout=5.0)
+        except Exception as e:
+            logger.warning(f"Failed to send log to backend: {e}")
+
     async def process_stream(stream):
         buffer = []
         async for log_entry in stream:
+            # Send to backend for real-time display
+            await send_log_to_backend(log_entry)
+            
             metrics = _extract_metrics_from_log(log_entry)
             buffer.extend(metrics)
             if len(buffer) >= 10:
