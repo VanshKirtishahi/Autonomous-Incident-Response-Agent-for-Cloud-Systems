@@ -9,6 +9,7 @@ import { useApp } from '../context/AppContext';
 import { API } from '../utils/api';
 import { barClass, formatUptime, formatBytes } from '../utils/helpers';
 import LoadingSpinner from '../components/LoadingSpinner';
+
 export default function ContainersPage() {
   const { liveMetrics, activeIncidents, addToast } = useApp();
   const [containers, setContainers] = useState([]);
@@ -20,24 +21,24 @@ export default function ContainersPage() {
 
   // Fixed 6 cloud-hosted containers configuration
   const expectedContainers = [
-    { service: 'api-gateway', name: 'API Gateway', icon: '🌐' },
-    { service: 'user-service', name: 'User Service', icon: '👤' },
-    { service: 'payment-service', name: 'Payment Service', icon: '💰' },
-    { service: 'order-service', name: 'Order Service', icon: '📦' },
-    { service: 'postgres-db', name: 'PostgreSQL', icon: '🗄️' },
-    { service: 'redis-cache', name: 'Redis Cache', icon: '⚡' }
+    { service: 'api-gateway', name: 'API Gateway' },
+    { service: 'user-service', name: 'User Service' },
+    { service: 'payment-service', name: 'Payment Service' },
+    { service: 'order-service', name: 'Order Service' },
+    { service: 'postgres-db', name: 'PostgreSQL' },
+    { service: 'redis-cache', name: 'Redis Cache' }
   ];
 
   const fetchContainers = useCallback(async () => {
     try {
       const response = await API.get('/containers');
-      setContainers(response.data || []);
+      setContainers(response?.data || []);
     } catch (error) {
       console.error('Failed to fetch containers:', error);
       addToast({
         type: 'error',
         title: 'Failed to load containers',
-        message: error.message
+        message: error?.message || 'Unknown error'
       });
     } finally {
       setLoading(false);
@@ -49,7 +50,7 @@ export default function ContainersPage() {
       const response = await API.get(`/containers/${containerId}/versions`);
       setVersionHistory(prev => ({
         ...prev,
-        [containerId]: response.data || []
+        [containerId]: response?.data || []
       }));
     } catch (error) {
       console.error('Failed to fetch version history:', error);
@@ -88,7 +89,7 @@ export default function ContainersPage() {
       addToast({
         type: 'error',
         title: 'Action failed',
-        message: error.message
+        message: error?.message || 'Action failed'
       });
     }
   };
@@ -132,7 +133,7 @@ export default function ContainersPage() {
             <option value="all">All Services</option>
             {expectedContainers.map(c => (
               <option key={c.service} value={c.service}>
-                {c.icon} {c.name}
+                {c.name}
               </option>
             ))}
           </select>
@@ -153,7 +154,7 @@ export default function ContainersPage() {
       {/* Container Grid */}
       <div className="container-grid">
         {expectedContainers.map((expected) => {
-          const container = containers.find(c => c.service === expected.service) || {
+          const container = containers?.find(c => c?.service === expected.service) || {
             service: expected.service,
             name: expected.name,
             status: 'unknown',
@@ -174,7 +175,7 @@ export default function ContainersPage() {
             inc => inc?.affectedService === container.service && inc?.status !== 'resolved'
           );
           const isExpanded = expandedContainer === container.containerId;
-          const versions = versionHistory[container.containerId] || [];
+          const versions = versionHistory?.[container.containerId] || [];
 
           return (
             <div 
@@ -183,17 +184,14 @@ export default function ContainersPage() {
                 ${container.status === 'rolling_back' ? 'rolling-back' : ''}
                 ${hasActiveIncident ? 'incident-active' : ''}`}
             >
-              {/* Header with service icon */}
+              {/* Header without service icon */}
               <div className="card-header">
-                <div className="service-icon">
-                  {expected.icon}
-                </div>
                 <div className="service-info">
                   <div className="service-name">
                     {container.name}
                     <span className="service-badge">{container.service}</span>
                   </div>
-                  <div className="container-id">{container.containerId.slice(0, 12)}</div>
+                  <div className="container-id">{container.containerId?.slice(0, 12)}</div>
                 </div>
                 <div className="status-group">
                   <div className={`status-badge ${container.status}`}>
@@ -324,16 +322,16 @@ export default function ContainersPage() {
                           <div key={idx} className="version-item">
                             <div className="version-info">
                               <GitBranch size={10} />
-                              <span className="version-hash">{version.tag}</span>
-                              <span className="version-date">{version.deployedAt}</span>
-                              {version.current && (
+                              <span className="version-hash">{version?.tag}</span>
+                              <span className="version-date">{version?.deployedAt}</span>
+                              {version?.current && (
                                 <span className="current-badge">Current</span>
                               )}
                             </div>
                             <button 
                               className="btn btn-xs btn-ghost"
-                              onClick={() => handleContainerAction(container.containerId, 'rollback', version.tag)}
-                              disabled={version.current}
+                              onClick={() => handleContainerAction(container.containerId, 'rollback', version?.tag)}
+                              disabled={version?.current}
                             >
                               <RotateCcw size={10} />
                               Rollback
@@ -477,17 +475,6 @@ export default function ContainersPage() {
           align-items: center;
           gap: 12px;
           margin-bottom: 16px;
-        }
-
-        .service-icon {
-          width: 40px;
-          height: 40px;
-          background: var(--bg-card);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 20px;
         }
 
         .service-info {
